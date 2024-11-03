@@ -58,7 +58,7 @@ def shedule_jobs():
 
 async def main():
     """Создание бота, запуск расписания и ожидания бота."""
-    
+
     API.auth()
     global bot
     bot = Bot(token=os.getenv('TOKEN'))

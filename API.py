@@ -81,15 +81,14 @@ def get_group_lessons():
                                               for pupil in item['customer_ids']
                                               ]
                 shedule = get_shedule()
-                is_match = False  
+                is_match = False
                 if item['lesson_type_id'] in [2, 5]:
                     for elem in shedule:
                         if (dict_lesson['Тип урока'] == elem['Тип урока']
                             and dict_lesson['Школа'] == elem['Школа']
                             and dict_lesson['День недели'] == (elem['День недели'])
                             and dict_lesson['Группа'] == elem['Группа']
-                            and dict_lesson['Время начала'].strftime('%H:%M') == elem['Время начала']
-                            ):
+                            and dict_lesson['Время начала'].strftime('%H:%M') == elem['Время начала']):
                             is_match = True
                     if not is_match:
                         dict_lesson['Тип урока'] += ' (Замена преподавателя)'

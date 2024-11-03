@@ -16,6 +16,7 @@ router = Router()
 data = dict()
 load_dotenv()
 
+
 @router.message(Command("start"))
 async def start_handler(msg: Message):
     await msg.answer("Привет, выбери кнопку", reply_markup=kb.menu)

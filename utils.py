@@ -21,6 +21,8 @@ import API
 #     return 'Занятия сегодня: \n' + lessons_message
 
 def write_lessons():
+    """Печать расписаний на сегодня."""
+
     today_lessons = API.get_group_lessons()
     lessons_message = ''
     if len(today_lessons) >= 1:
@@ -37,46 +39,48 @@ def write_lessons():
     return 'Занятия сегодня: \n' + lessons_message
 
 
-def readDatabase(filename, weekday):
-    try:
-        wb = openpyxl.load_workbook(filename)
-        sheet = wb.active
-        today_lessons = []
-        for result in sheet['B']:
-            if result.internal_value == weekday:
-                res_row = result.row
-                dict_lesson = {}
-                i = 0
-                for letter in 'ABCDE':
-                    dict_lesson[str(KEYS[i])] = (sheet[letter + str(res_row)]
-                                                 ).internal_value
-                    today_lessons.append(dict_lesson)
-                    i += 1
-        return today_lessons
-    except FileNotFoundError:
-        print('Файл не найден')
+# def readDatabase(filename, weekday):
+#     try:
+#         wb = openpyxl.load_workbook(filename)
+#         sheet = wb.active
+#         today_lessons = []
+#         for result in sheet['B']:
+#             if result.internal_value == weekday:
+#                 res_row = result.row
+#                 dict_lesson = {}
+#                 i = 0
+#                 for letter in 'ABCDE':
+#                     dict_lesson[str(KEYS[i])] = (sheet[letter + str(res_row)]
+#                                                  ).internal_value
+#                     today_lessons.append(dict_lesson)
+#                     i += 1
+#         return today_lessons
+#     except FileNotFoundError:
+#         print('Файл не найден')
 
 
-def readDatabaseSheduel(filename):
-    try:
-        wb = openpyxl.load_workbook(filename)
-        sheet = wb.active
-        today_lessons = []
-        for result in sheet['B']:
-            if result.internal_value != 'День':
-                res_row = result.row
-                dict_lesson = {}
-                i = 0
-                for letter in 'ABCDE':
-                    dict_lesson[str(KEYS[i])] = (sheet[letter + str(res_row)]
-                                                 ).internal_value
-                today_lessons.append(dict_lesson)
-        return today_lessons
-    except FileNotFoundError:
-        print('Файл не найден')
+# def readDatabaseSheduel(filename):
+#     try:
+#         wb = openpyxl.load_workbook(filename)
+#         sheet = wb.active
+#         today_lessons = []
+#         for result in sheet['B']:
+#             if result.internal_value != 'День':
+#                 res_row = result.row
+#                 dict_lesson = {}
+#                 i = 0
+#                 for letter in 'ABCDE':
+#                     dict_lesson[str(KEYS[i])] = (sheet[letter + str(res_row)]
+#                                                  ).internal_value
+#                 today_lessons.append(dict_lesson)
+#         return today_lessons
+#     except FileNotFoundError:
+#         print('Файл не найден')
 
 
 def get_text_extras(data):
+    """Формирование текста отработки."""
+
     date = datetime.date.today()
     day = date.day
     month = date.month
@@ -101,6 +105,8 @@ def get_text_extras(data):
 
 
 def print_overwork(data):
+    """Печать переработки."""
+
     lesson = data['lesson']
     date = datetime.date.today()
     day = date.day
@@ -128,6 +134,8 @@ def print_overwork(data):
 
 
 def print_lesson(data):  # TODO Добавить онлайн/офлайн
+    """Печать урока."""
+
     lesson = data['lesson']
     date = datetime.date.today()
     day = date.day
@@ -166,6 +174,8 @@ def print_lesson(data):  # TODO Добавить онлайн/офлайн
 
 
 def save_lesson_excel(data):
+    """Сохранение урока в Эксель."""
+
     try:
         wb = openpyxl.load_workbook(config.SAVE_fILENAME)
         sheet = wb.active
@@ -187,6 +197,8 @@ def save_lesson_excel(data):
 
 
 def save_extras_excel(data):
+    """Сохранение отработки в Эксель."""
+
     try:
         wb = openpyxl.load_workbook(config.SAVE_fILENAME)
         sheet = wb.active
