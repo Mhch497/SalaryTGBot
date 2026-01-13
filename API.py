@@ -5,6 +5,7 @@ import requests
 from dotenv import load_dotenv
 
 from config import lessons_type, room_id, subjects_id
+from transformer import Transformer
 
 load_dotenv()
 URL = 'https://algoritmikakirrn.s20.online/'
@@ -47,8 +48,19 @@ def get_subjects():
         get_subjects()
 
 
+
 def get_group_lessons():
     """Получение текущих недельных занятий."""
+
+    item2dict = Transformer((
+        ('lesson_type_id', 'Тип урока', Transformer.lookup(lessons_type)),
+        ('room_id', 'Школа', Transformer.lookup(room_id)),
+        ('date', 'Дата', Transformer.strpdate),
+        ('date', 'День недели', Transformer.strpweekday),
+        ('subject_id', 'Группа', Transformer.lookup(subjects_id)),
+        ('time_from', 'Время начала', Transformer.strptime),
+        ('time_to', 'Время окончания', Transformer.strptime)
+    ))
 
     today_lessons = []
     if os.getenv("X_ALFACRM_TOKEN") is not None:
@@ -64,24 +76,15 @@ def get_group_lessons():
         if response.ok:
             response = response.json()
             for item in response['items']:
-                dict_lesson = dict()
-                dict_lesson['Тип урока'] = lessons_type[item['lesson_type_id']]
-                dict_lesson['Школа'] = room_id[item['room_id']]
-                dict_lesson['Дата'] = datetime.datetime.strptime(
-                    item['date'], '%Y-%m-%d').date()
-                dict_lesson['День недели'] = datetime.datetime.strptime(
-                    item['date'], '%Y-%m-%d').date().weekday() + 1
-                dict_lesson['Группа'] = subjects_id[item['subject_id']]
-                dict_lesson['Время начала'] = datetime.datetime.strptime(
-                    item['time_from'], '%Y-%m-%d %H:%M:%S').time()
-                dict_lesson['Время окончания'] = datetime.datetime.strptime(
-                    item['time_to'], '%Y-%m-%d %H:%M:%S').time()
+                dict_lesson = item2dict.transform(item)
+                # TODO introduce LessonTypeEnum and use instead [2, 3, 5] here.
                 if item['lesson_type_id'] not in [2, 3, 5]:
                     dict_lesson['Ученики'] = [get_pupil(pupil)
                                               for pupil in item['customer_ids']
                                               ]
                 shedule = get_shedule()
                 is_match = False
+                # TODO introduce LessonTypeEnum and use instead [2, 5] here.
                 if item['lesson_type_id'] in [2, 5]:
                     for elem in shedule:
                         if (dict_lesson['Тип урока'] == elem['Тип урока']
@@ -139,16 +142,15 @@ def get_shedule():
         response = requests.post(URL + 'v2api/1/regular-lesson/index',
                                  headers=headers, json=body)
         if response.ok:
+            item2lesson = Transformer((
+                ('lesson_type_id', 'Тип урока', Transformer.lookup(lessons_type)),
+                ('room_id', 'Школа', Transformer.lookup(room_id)),
+                ('day', 'День недели', Transformer.identity),
+                ('subject_id', 'Группа', Transformer.lookup(subjects_id)),
+                ('time_from_v', 'Время начала', Transformer.identity),
+            ))
             response = response.json()
-            for item in response['items']:
-                dict_lesson = dict()
-                dict_lesson['Тип урока'] = lessons_type[item['lesson_type_id']]
-                dict_lesson['Школа'] = room_id[item['room_id']]
-                dict_lesson['День недели'] = item['day']
-                dict_lesson['Группа'] = subjects_id[item['subject_id']]
-                dict_lesson['Время начала'] = item['time_from_v']
-                shedule.append(dict_lesson)
-            return shedule
+            return [item2lesson.transform(item) for item in response['items']]
     auth()
     get_shedule()
 
